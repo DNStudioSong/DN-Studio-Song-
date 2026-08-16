@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Payment Successful | DN Custom Studio</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--navy:#071c34;--gold:#d39a1f;--green:#19a957;--bg:#f7f9fc;--muted:#667085;--red:#c62828}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#fff 0,#f6f8fc 100%);color:var(--navy);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px}
+.card{width:min(620px,100%);background:#fff;border:1px solid #e6eaf0;border-radius:24px;box-shadow:0 18px 50px rgba(7,28,52,.12);padding:24px}.tick{width:76px;height:76px;border-radius:50%;background:#e9f8ef;color:var(--green);display:grid;place-items:center;font-size:44px;font-weight:900;margin:0 auto 12px}.bad{background:#fff2f2;color:var(--red)}h1{text-align:center;margin:8px 0 6px;font-size:30px}.sub{text-align:center;color:var(--muted);margin:0 0 18px;line-height:1.5}.summary{border:1px solid #e6eaf0;border-radius:18px;overflow:hidden;margin:16px 0}.row{display:flex;gap:16px;justify-content:space-between;padding:13px 15px;border-bottom:1px solid #edf0f4}.row:last-child{border-bottom:0}.row span{color:var(--muted)}.row b{text-align:right;max-width:66%}.wa{display:block;text-decoration:none;text-align:center;background:var(--green);color:#fff;font-weight:900;font-size:19px;padding:17px 18px;border-radius:16px;margin-top:16px;box-shadow:0 10px 24px rgba(25,169,87,.25)}.note{text-align:center;color:var(--muted);font-size:13px;margin-top:12px;line-height:1.45}.brand{text-align:center;font-weight:800;letter-spacing:.4px;color:#8b6917;margin-top:14px}.retry{display:block;text-align:center;color:var(--navy);margin-top:16px}.hidden{display:none}.delivery{text-align:center;background:#fff8e8;border:1px solid #f3d68c;border-radius:14px;padding:11px;margin:14px 0;font-weight:750}
+</style>
+</head>
+<body>
+<main class="card">
+  <div id="okView" class="hidden">
+    <div class="tick">✓</div>
+    <h1>Payment Successful</h1>
+    <p class="sub">Payment complete ho gaya. Ab neeche green button par tap karke apni poori song order details WhatsApp par send karein.</p>
+    <div class="delivery">⚡ Maximum Delivery: 30 Minutes After Payment</div>
+    <div class="summary" id="summary"></div>
+    <a class="wa" id="waLink" href="#">💬 WhatsApp Par Order Details Send Karein</a>
+    <p class="note">WhatsApp open hone par message pehle se ready hoga. Bas <b>Send</b> button dabana hai.</p>
+  </div>
+  <div id="badView" class="hidden">
+    <div class="tick bad">!</div>
+    <h1>Order Details Not Found</h1>
+    <p class="sub">Is browser me saved order details nahi mili. Payment page ko dobara pay mat karein. Pehle wahi browser/tab use karein jisme order details fill ki thi.</p>
+    <a class="retry" href="/">Website Home Par Jayein</a>
+  </div>
+  <div class="brand">DN CUSTOM STUDIO</div>
+</main>
+<script>
+(function(){
+ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+ let o=null; try{o=JSON.parse(localStorage.getItem('dn_order')||'null')}catch(e){}
+ const pending=localStorage.getItem('dn_payment_pending')==='1';
+ const paid=new URLSearchParams(location.search).get('paid')==='1';
+ if(!o || !pending || !paid){document.getElementById('badView').classList.remove('hidden');return;}
+ const rows=[
+  ['Order Ref',o.ref],['Package',o.package],['Song',(o.songs||[]).join(' | ')],['Customer',o.customer],['Customer WhatsApp',o.phone],['Language',o.language],
+  ...(o.details||[]).map(x=>['Detail',x]),...(o.special?[['Special Request',o.special]]:[])
+ ];
+ document.getElementById('summary').innerHTML=rows.map(([a,b])=>`<div class="row"><span>${esc(a)}</span><b>${esc(b)}</b></div>`).join('');
+ const lines=[
+  '🎵 *DN CUSTOM STUDIO - NEW ORDER*','',
+  '✅ Payment: Successful via Razorpay',
+  `🧾 Order Ref: ${o.ref||''}`,
+  `💰 Package: ${o.package||''}`,
+  `🎶 Song: ${(o.songs||[]).join(' | ')}`,
+  `👤 Customer: ${o.customer||''}`,
+  `📱 Customer WhatsApp: ${o.phone||''}`,
+  `🗣 Language: ${o.language||''}`,
+  ...(o.details||[]).map(x=>'• '+x),
+  o.special?`📝 Special Request: ${o.special}`:'',
+  '', '⚡ Delivery: Maximum 30 minutes after payment'
+ ].filter(Boolean);
+ const dest='919879400109';
+ const wa='https://wa.me/'+dest+'?text='+encodeURIComponent(lines.join('\n'));
+ const link=document.getElementById('waLink'); link.href=wa;
+ link.addEventListener('click',()=>{localStorage.setItem('dn_payment_pending','0');localStorage.setItem('dn_last_paid_order',JSON.stringify(o));});
+ document.getElementById('okView').classList.remove('hidden');
+ // No forced auto-redirect: user gets a clear button and can review details first.
+})();
+</script>
+</body>
+</html>
